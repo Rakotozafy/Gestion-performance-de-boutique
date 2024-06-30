@@ -1,0 +1,152 @@
+<?php
+
+if (!defined('BASEPATH'))
+    exit('No direct script access allowed');
+
+class Typedepatient extends CI_Controller
+{
+    function __construct()
+    {
+        parent::__construct();
+        $this->load->model('Typedepatient_model');
+        $this->load->library('form_validation');
+    }
+
+    public function index()
+    {
+        $q = urldecode($this->input->get('q', TRUE));
+        $start = intval($this->input->get('start'));
+        
+        if ($q <> '') {
+            $config['base_url'] = base_url() . 'typedepatient/index.html?q=' . urlencode($q);
+            $config['first_url'] = base_url() . 'typedepatient/index.html?q=' . urlencode($q);
+        } else {
+            $config['base_url'] = base_url() . 'typedepatient/index.html';
+            $config['first_url'] = base_url() . 'typedepatient/index.html';
+        }
+
+        $config['per_page'] = 10;
+        $config['page_query_string'] = TRUE;
+        $config['total_rows'] = $this->Typedepatient_model->total_rows($q);
+        $typedepatient = $this->Typedepatient_model->get_limit_data($config['per_page'], $start, $q);
+
+        $this->load->library('pagination');
+        $this->pagination->initialize($config);
+
+        $data = array(
+            'typedepatient_data' => $typedepatient,
+            'q' => $q,
+            'pagination' => $this->pagination->create_links(),
+            'total_rows' => $config['total_rows'],
+            'start' => $start,
+        );
+        $this->load->view('typedepatient/typedepatient_list', $data);
+    }
+
+    public function read($id) 
+    {
+        $row = $this->Typedepatient_model->get_by_id($id);
+        if ($row) {
+            $data = array(
+		'tp_id' => $row->tp_id,
+		'tp_typeDePatient' => $row->tp_typeDePatient,
+	    );
+            $this->load->view('typedepatient/typedepatient_read', $data);
+        } else {
+            $this->session->set_flashdata('message', 'Record Not Found');
+            redirect(site_url('typedepatient'));
+        }
+    }
+
+    public function create() 
+    {
+        $data = array(
+            'button' => 'Create',
+            'action' => site_url('typedepatient/create_action'),
+	    'tp_id' => set_value('tp_id'),
+	    'tp_typeDePatient' => set_value('tp_typeDePatient'),
+	);
+        $this->load->view('typedepatient/typedepatient_form', $data);
+    }
+    
+    public function create_action() 
+    {
+        $this->_rules();
+
+        if ($this->form_validation->run() == FALSE) {
+            $this->create();
+        } else {
+            $data = array(
+		'tp_typeDePatient' => $this->input->post('tp_typeDePatient',TRUE),
+	    );
+
+            $this->Typedepatient_model->insert($data);
+            $this->session->set_flashdata('message', 'Create Record Success');
+            redirect(site_url('typedepatient'));
+        }
+    }
+    
+    public function update($id) 
+    {
+        $row = $this->Typedepatient_model->get_by_id($id);
+
+        if ($row) {
+            $data = array(
+                'button' => 'Update',
+                'action' => site_url('typedepatient/update_action'),
+		'tp_id' => set_value('tp_id', $row->tp_id),
+		'tp_typeDePatient' => set_value('tp_typeDePatient', $row->tp_typeDePatient),
+	    );
+            $this->load->view('typedepatient/typedepatient_form', $data);
+        } else {
+            $this->session->set_flashdata('message', 'Record Not Found');
+            redirect(site_url('typedepatient'));
+        }
+    }
+    
+    public function update_action() 
+    {
+        $this->_rules();
+
+        if ($this->form_validation->run() == FALSE) {
+            $this->update($this->input->post('tp_id', TRUE));
+        } else {
+            $data = array(
+		'tp_typeDePatient' => $this->input->post('tp_typeDePatient',TRUE),
+	    );
+
+            $this->Typedepatient_model->update($this->input->post('tp_id', TRUE), $data);
+            $this->session->set_flashdata('message', 'Update Record Success');
+            redirect(site_url('typedepatient'));
+        }
+    }
+    
+    public function delete($id) 
+    {
+        $row = $this->Typedepatient_model->get_by_id($id);
+
+        if ($row) {
+            $this->Typedepatient_model->delete($id);
+            $this->session->set_flashdata('message', 'Delete Record Success');
+            redirect(site_url('typedepatient'));
+        } else {
+            $this->session->set_flashdata('message', 'Record Not Found');
+            redirect(site_url('typedepatient'));
+        }
+    }
+
+    public function _rules() 
+    {
+	$this->form_validation->set_rules('tp_typeDePatient', 'tp typedepatient', 'trim|required');
+
+	$this->form_validation->set_rules('tp_id', 'tp_id', 'trim');
+	$this->form_validation->set_error_delimiters('<span class="text-danger">', '</span>');
+    }
+
+}
+
+/* End of file Typedepatient.php */
+/* Location: ./application/controllers/Typedepatient.php */
+/* Please DO NOT modify this information : */
+/* Generated by Harviacode Codeigniter CRUD Generator 2022-12-01 09:39:49 */
+/* http://harviacode.com */
